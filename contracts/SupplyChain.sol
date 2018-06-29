@@ -81,13 +81,13 @@ contract SupplyChain {
         _;
     }
 
-    modifier shipped(Item _item) {
-        require(_item.state == State.Shipped);
+    modifier shipped(uint _sku) {
+        require(items[_sku].state == State.Shipped);
         _;
     }
 
-    modifier received(Item _item) {
-        require(_item.state == State.Received);
+    modifier received(uint _sku) {
+        require(items[_sku].state == State.Received);
         _;
     }
 
@@ -121,7 +121,6 @@ contract SupplyChain {
         uint _price = items[sku].price;
         items[sku].seller.transfer(_price);
         items[sku].state = State.Sold;
-        
         emit Sold(sku);
     }
 
@@ -131,17 +130,21 @@ contract SupplyChain {
       public
       sold(sku)
       verifyCaller(items[sku].seller)
-
     {
-        //items[sku].state = State.Shipped;
-        //emit Shipped(sku); 
+        items[sku].state = State.Shipped;
+        emit Shipped(sku); 
     }
 
     /* Add 2 modifiers to check if the item is shipped already, and that the person calling this function
     is the buyer. Change the state of the item to received. Remember to call the event associated with this function!*/
     function receiveItem(uint sku)
       public
-    {}
+      shipped(sku)
+      verifyCaller(items[sku].buyer)
+    {
+        items[sku].state = State.Received;
+        emit Received(sku);
+    }
 
     /* We have these functions completed so we can run tests, just ignore it :) */
     function fetchItem(uint _sku) public view returns (string name, uint sku, uint price, uint state, address seller, address buyer) {
